@@ -13,16 +13,30 @@
 }
 
 :root {
-  /* Light (default) */
-  --color-background: var(--color-white);
-  --color-background-soft: var(--color-slate-50);
-  --color-background-mute: var(--color-slate-100);
-  --color-border: var(--color-slate-200);
-  --color-heading: var(--color-slate-800);
-  --color-text: var(--color-slate-700);
-  --color-text-soft: var(--color-slate-500);
-  --color-icon: var(--color-slate-500);
+  /* === Light Theme Custom Palette === */
+
+  /* Base Colors */
+  --color-background: #FFF7F0; /* Main BG */
+  --color-topbar: #FFD5B5;      /* Top bar */
+  --color-card-header: #FFE8D6; /* Card header */
+  --color-card-border: #F79A64; /* Card border */
+  --color-sidebar: #F8A979;     /* Sidebar */
+
+  /* Sidebar Interactions */
+  --color-sidebar-text-default: #FFFFFF; /* default text */
+  --color-sidebar-icon-default: #FFEB99; /* default icon */
+  --color-sidebar-text-selected: #2B3A42; /* selected text */
+  --color-sidebar-icon-selected: #F37022; /* selected icon */
+  --color-sidebar-selection-box: #FDF3ED; /* selected box bg */
+
+  /* Optional Overrides */
+  --color-border: #F79A64;
+  --color-heading: #000000;
+  --color-text: #333333;
+  --color-text-soft: #6B6B6B;
+  --color-icon: #6B6B6B;
 }
+
 
 :root.dark {
   /* Dark Theme */

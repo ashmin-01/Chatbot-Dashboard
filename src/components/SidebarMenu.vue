@@ -1,161 +1,82 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import IconHome from './icons/IconHome.vue'
-import IconInfoCircle from './icons/IconInfoCircle.vue'
 
-// Get the i18n composition API instance
+import SidebarLink from './SidebarLink.vue' // <-- Import your component
+
+import dashboardIcon from './icons/my-icons/dashboardIcon.svg'
+import knowledgeBaseIcon from './icons/my-icons/knowledgeBaseIcon.svg'
+import analyticsIcon from './icons/my-icons/analyticsIcon.svg'
+import developerToolsIcon from './icons/my-icons/developerToolsIcon.svg'
+import settingsIcon from './icons/my-icons/settingsIcon.svg'
+import notificationsIcon from './icons/my-icons/notificationsIcon.svg'
+import logoutIcon from './icons/my-icons/logoutIcon.svg'
+
 const { t } = useI18n()
 
-// Define menu items with icons, labels, and routes
-const menuItems = [
-  { icon: IconHome, labelKey: 'navigation.dashboard', route: '/' },
-  { icon: IconInfoCircle, labelKey: 'navigation.about', route: '/about' },
-  { icon: IconInfoCircle, label: 'API Example', route: '/api-example' },
-  { icon: IconInfoCircle, label: 'TanStack API', route: '/tanstack-api' },
-  // Add more menu items as needed
+const mainMenu = [
+  { icon: dashboardIcon, labelKey: 'navigation.dashboard', route: '/' },
+  { icon: knowledgeBaseIcon, labelKey: 'navigation.knowledgeBase', route: '/knowledge-base' },
+  { icon: analyticsIcon, label: 'Analytics & Reports', route: '/api-example' },
+  { icon: developerToolsIcon, label: 'Developer Tools', route: '/tanstack-api' },
 ]
 
-// State for sidebar collapse functionality
+const footerMenu = [
+  { icon: settingsIcon, label: 'Settings', route: '/tanstack-api' },
+  { icon: notificationsIcon, label: 'Notifications & Alerts', route: '/tanstack-api' },
+  { icon: logoutIcon, label: 'Logout', route: '/tanstack-api' },
+]
+
 const collapsed = ref(false)
-const toggleSidebar = () => {
-  collapsed.value = !collapsed.value
-}
+const toggleSidebar = () => (collapsed.value = !collapsed.value)
 </script>
 
 <template>
   <aside
-    class="flex flex-col h-screen bg-background-soft text-text border-r border-border transition-[width] duration-300 ease-in-out"
-    :class="{ 'w-[70px]': collapsed, 'w-[250px]': !collapsed }"
+    class="relative flex flex-col h-screen transition-[width] duration-300 ease-in-out font-sans rounded-r-4xl"
+    :class="{ 'w-[70px]': collapsed, 'w-[300px]': !collapsed }"
+    style="background-color: var(--color-sidebar)"
   >
-    <div class="flex items-center p-4 border-b border-border h-16">
-      <img alt="Vue logo" class="w-10 h-10" src="@/assets/logo.svg" />
-      <h2 v-if="!collapsed" class="ml-2 text-lg font-bold flex-grow">
-        {{ t('navigation.dashboard') }}
-      </h2>
-      <button
-        class="bg-transparent border-none text-text text-2xl cursor-pointer"
-        @click="toggleSidebar"
-      >
-        <span v-if="collapsed">›</span>
-        <span v-else>‹</span>
-      </button>
+    <!-- Toggle Button -->
+    <button
+      class="absolute top-2 right-6 text-3xl cursor-pointer text-text"
+      @click="toggleSidebar"
+    >
+      <span v-if="collapsed">›</span>
+      <span v-else>‹</span>
+    </button>
+
+    <!-- Logo -->
+    <div class="flex justify-center items-center py-12">
+      <img
+        alt="BeeOrder logo"
+        :class="[collapsed ? 'w-12 h-12' : 'w-28 h-28']"
+        src="@/assets/beeorder_logo.png"
+      />
     </div>
 
-    <nav class="flex-grow py-4 overflow-y-auto">
-      <ul class="list-none p-0 m-0">
-        <li v-for="item in menuItems" :key="item.labelKey || item.label">
-          <RouterLink
-            :to="item.route"
-            class="flex items-center px-4 py-3 text-text no-underline transition-colors duration-200 hover:bg-background-mute router-link-active:bg-primary-hover router-link-active:text-primary router-link-active:font-bold"
-          >
-            <span class="w-6 h-6 flex items-center justify-center"
-              ><component :is="item.icon"
-            /></span>
-            <span v-if="!collapsed" class="ml-3">{{
-              item.labelKey ? t(item.labelKey) : item.label
-            }}</span>
-          </RouterLink>
-        </li>
-      </ul>
+    <!-- Main Menu -->
+    <nav class="flex-grow px-2 space-y-2">
+      <SidebarLink
+        v-for="item in mainMenu"
+        :key="item.labelKey || item.label"
+        :item="item"
+        :collapsed="collapsed"
+      />
     </nav>
 
-    <div v-if="!collapsed" class="p-4 text-sm text-center border-t border-border">
-      <p>© 2023 Dashboard</p>
+    <!-- Footer Menu -->
+    <div class="px-2 pb-20 space-y-2">
+      <SidebarLink
+        v-for="item in footerMenu"
+        :key="item.label"
+        :item="item"
+        :collapsed="collapsed"
+      />
+    </div>
+      <!-- Footer -->
+      <div v-if="!collapsed" class="p-5 text-sm text-center">
+      <p class="text-center w-full">© 2025 BeeOrder Dashboard</p>
     </div>
   </aside>
 </template>
-
-<style scoped>
-.sidebar {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--color-background-soft);
-  color: var(--color-text);
-  height: 100vh;
-  width: 250px;
-  transition: width 0.3s ease;
-  border-right: 1px solid var(--color-border);
-}
-
-.sidebar.collapsed {
-  width: 70px;
-}
-
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.sidebar-header h2 {
-  margin-left: 0.5rem;
-  font-size: 1.2rem;
-  font-weight: bold;
-  flex-grow: 1;
-}
-
-.toggle-btn {
-  background: none;
-  border: none;
-  color: var(--color-text);
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-.sidebar-nav {
-  flex-grow: 1;
-  padding: 1rem 0;
-  overflow-y: auto;
-}
-
-.nav-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.nav-item {
-  margin-bottom: 0.25rem;
-}
-
-.nav-link {
-  display: flex;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  color: var(--color-text);
-  text-decoration: none;
-  transition: background-color 0.2s;
-}
-
-.nav-link:hover {
-  background-color: var(--color-background-mute);
-}
-
-.nav-link.active {
-  background-color: var(--color-primary-hover);
-  color: var(--color-primary);
-  font-weight: bold;
-}
-
-.nav-icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.nav-text {
-  margin-left: 0.75rem;
-}
-
-.sidebar-footer {
-  padding: 1rem;
-  font-size: 0.875rem;
-  text-align: center;
-  border-top: 1px solid var(--color-border);
-}
-</style>

@@ -26,6 +26,7 @@ declare module 'vue' {
     LanguageSwitcher: typeof import('./src/components/LanguageSwitcher.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SidebarLink: typeof import('./src/components/SidebarLink.vue')['default']
     SidebarMenu: typeof import('./src/components/SidebarMenu.vue')['default']
     TextInput: typeof import('./src/components/input/TextInput.vue')['default']
     ThemeSwitch: typeof import('./src/components/ThemeSwitch.vue')['default']

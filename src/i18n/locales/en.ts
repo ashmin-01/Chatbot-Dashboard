@@ -16,7 +16,7 @@ export default {
   },
   navigation: {
     home: 'Home',
-    about: 'About',
+    knowledgeBase: 'Knowledge Base',
     login: 'Login',
     register: 'Register',
     logout: 'Logout',

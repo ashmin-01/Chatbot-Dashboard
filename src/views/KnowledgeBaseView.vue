@@ -1,5 +1,5 @@
 <template>
-  <div class="px-8 py-6 bg-[#FBEEE6] min-h-screen">
+  <div class="px-8 py-6 min-h-screen">
     <!-- Header -->
     <div class="!mb-4">
       <h2 class="text-3xl font-semibold text-gray-800">Knowledge Base</h2>
@@ -157,7 +157,7 @@
 
 <script>
 import Papa from 'papaparse';
-import * as XLSX from 'xlsx';
+//import * as XLSX from 'xlsx';
 export default {
   name: 'KnowledgeBase',
   data() {
@@ -223,28 +223,6 @@ export default {
     }
   },
   methods: {
-  addKnowledgeItem() {
-    this.knowledgeItems.unshift({
-      question: this.form.en.question,
-      responsePreview: this.form.en.answer,
-      category: [this.form.en.category],
-      author: "You",
-      date: new Date().toLocaleString('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      })
-    });
-    this.showModal = false;
-    this.form = {
-      en: { question: '', answer: '', category: '' },
-      ar: { question: '', answer: '', category: '' }
-    };
-    this.language = 'en';
-  },
   editItem(index) {
   const item = this.knowledgeItems[index];
   this.language = 'en';
@@ -354,7 +332,7 @@ handleFileUpload(event) {
     reader.readAsText(file);
   },
 
-  parseXLSX(file) {
+ /* parseXLSX(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
       const workbook = XLSX.read(e.target.result, { type: 'binary' });
@@ -363,7 +341,7 @@ handleFileUpload(event) {
       this.insertParsedItems(jsonData);
     };
     reader.readAsBinaryString(file);
-  },
+  },*/
 
   insertParsedItems(data) {
     const parsedItems = data.map(row => ({
