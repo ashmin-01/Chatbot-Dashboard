@@ -9,6 +9,8 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     DashboardHeader: typeof import('./src/components/DashboardHeader.vue')['default']
+    ElButton: typeof import('element-plus/es')['ElButton']
+    ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElCustomTable: typeof import('./src/components/custom/ElCustomTable.vue')['default']
     ElInput: typeof import('element-plus/es')['ElInput']
     ElInputField: typeof import('./src/components/fields/ElInputField.vue')['default']

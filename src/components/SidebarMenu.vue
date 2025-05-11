@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router' // <-- Import useRoute
 
-import SidebarLink from './SidebarLink.vue' // <-- Import your component
+import SidebarLink from './SidebarLink.vue'
 
+// Import your icons
 import dashboardIcon from './icons/my-icons/dashboardIcon.svg'
 import knowledgeBaseIcon from './icons/my-icons/knowledgeBaseIcon.svg'
 import analyticsIcon from './icons/my-icons/analyticsIcon.svg'
@@ -13,6 +15,7 @@ import notificationsIcon from './icons/my-icons/notificationsIcon.svg'
 import logoutIcon from './icons/my-icons/logoutIcon.svg'
 
 const { t } = useI18n()
+const route = useRoute() // <-- Get current route
 
 const mainMenu = [
   { icon: dashboardIcon, labelKey: 'navigation.dashboard', route: '/' },
@@ -29,6 +32,9 @@ const footerMenu = [
 
 const collapsed = ref(false)
 const toggleSidebar = () => (collapsed.value = !collapsed.value)
+
+// Computed property to get current route path
+const currentRoute = computed(() => route.path)
 </script>
 
 <template>
@@ -62,6 +68,7 @@ const toggleSidebar = () => (collapsed.value = !collapsed.value)
         :key="item.labelKey || item.label"
         :item="item"
         :collapsed="collapsed"
+        :is-active="currentRoute === item.route"
       />
     </nav>
 
@@ -72,10 +79,12 @@ const toggleSidebar = () => (collapsed.value = !collapsed.value)
         :key="item.label"
         :item="item"
         :collapsed="collapsed"
+        :is-active="currentRoute === item.route" 
       />
     </div>
-      <!-- Footer -->
-      <div v-if="!collapsed" class="p-5 text-sm text-center">
+
+    <!-- Footer -->
+    <div v-if="!collapsed" class="p-5 text-sm text-center">
       <p class="text-center w-full">© 2025 BeeOrder Dashboard</p>
     </div>
   </aside>

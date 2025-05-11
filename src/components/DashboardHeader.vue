@@ -23,44 +23,13 @@ const userMenuItems = [
 
 <template>
   <header
-    class="flex items-center justify-between h-16 px-6 bg-background-soft border-b border-border"
+    class="flex items-center justify-end h-16 px-6 z-10 -mt-2 bg-[var(--color-topbar)] shadow-sm"
   >
-    <!-- Breadcrumb -->
-    <div class="flex items-center">
-      <h1 class="text-xl font-semibold text-heading">{{ route.name }}</h1>
-    </div>
-
-    <!-- Search Bar -->
-    <div class="flex-1 max-w-xl mx-6">
-      <div class="relative">
-        <input
-          v-model="searchQuery"
-          type="text"
-          :placeholder="t('common.search')"
-          class="w-full px-4 py-2 pl-10 text-sm bg-background-mute rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-        />
-        <svg
-          class="absolute left-3 top-2.5 h-5 w-5 text-text-soft"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
-      </div>
-    </div>
-
     <!-- Right Section -->
     <div class="flex items-center space-x-4">
       <!-- Notifications -->
       <button
-        class="p-2 text-icon hover:bg-background-mute rounded-lg transition-colors duration-200"
+        class="p-2 cursor-pointer text-icon hover:bg-background-mute rounded-lg transition-colors duration-200"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -82,20 +51,22 @@ const userMenuItems = [
       <LanguageSwitcher />
 
       <!-- Theme Switch -->
-      <ThemeSwitch />
+      <ThemeSwitch class="cursor-pointer" />
 
       <!-- User Profile -->
       <div class="relative">
         <button
           @click="toggleUserMenu"
-          class="flex items-center space-x-2 p-2 hover:bg-background-mute rounded-lg transition-colors duration-200"
+          class="flex cursor-pointer items-center space-x-2 p-2 hover:bg-background-mute rounded-lg transition-colors duration-200"
         >
           <img
             src="https://ui-avatars.com/api/?name=Admin+User"
             alt="User avatar"
             class="w-8 h-8 rounded-full"
           />
-          <span class="text-sm font-medium hidden md:block">Admin User</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-icon" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.174l3.71-3.944a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+    </svg>
         </button>
 
         <!-- User Menu Dropdown -->
