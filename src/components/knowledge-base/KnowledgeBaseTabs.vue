@@ -17,12 +17,18 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  tabs: string[];
-  activeTab: string;
-}>();
+import { ref } from 'vue'
 
-defineEmits<{
-  'update:activeTab': [tab: string];
-}>();
-</script>
+// Props
+const props = defineProps<{
+  activeTab: string
+}>()
+
+// Emits
+const emit = defineEmits<{
+  'update:activeTab': [value: string]
+}>()
+
+// Tabs data
+const tabs = ref(['FAQs', 'Long-form Answers', 'API Responses', 'Archived'])
+</script> 

@@ -1,29 +1,10 @@
 <template>
   <div class="px-8 py-6 min-h-screen">
     <!-- Header -->
-    <div class="!mb-4">
-      <h2 class="text-3xl font-semibold text-gray-800">Knowledge Base</h2>
-      <p class="!mt-2 text-gray-500">
-        Manage the bot’s brain. Add, update, or review answers to customer queries.
-      </p>
-    </div>
+    <KnowledgeBaseHeader />
 
     <!-- Tabs -->
-    <div class="flex border-b border-gray-200 !mb-3 text-sm font-medium text-gray-500">
-      <button
-        v-for="tab in tabs"
-        :key="tab"
-        @click="activeTab = tab"
-        class="px-4 py-2 -mb-px border-b-2"
-        :class="
-          activeTab === tab
-            ? 'border-orange-500 text-orange-600'
-            : 'border-transparent hover:text-orange-500 hover:border-orange-300'
-        "
-      >
-        {{ tab }}
-      </button>
-    </div>
+    <KnowledgeBaseTabs v-model:activeTab="activeTab" />
 
     <!-- Tab Content -->
     <div v-if="activeTab === 'FAQs'" class="space-y-3">
@@ -67,176 +48,85 @@
             class="hidden"
           />
           <!-- Modal -->
-          <div
-            v-if="showModal"
-            class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
-          >
-            <div class="bg-white rounded-lg w-full max-w-xl p-6 shadow-lg relative">
-              <!-- Close Button -->
-              <button
-                @click="showModal = false"
-                class="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-              >
-                <i class="ri-close-line text-2xl"></i>
-              </button>
-
-              <!-- Toggle Language -->
-              <div class="flex justify-center mb-4 gap-2">
-                <button
-                  :class="
-                    language === 'en' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700'
-                  "
-                  class="px-4 py-1 rounded"
-                  @click="language = 'en'"
-                >
-                  English
-                </button>
-                <button
-                  :class="
-                    language === 'ar' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700'
-                  "
-                  class="px-4 py-1 rounded"
-                  @click="language = 'ar'"
-                >
-                  Arabic
-                </button>
-              </div>
-
-              <!-- Form Fields -->
-              <div class="space-y-4">
-                <div v-if="language === 'en'">
-                  <input
-                    v-model="form.en.question"
-                    placeholder="English Question"
-                    class="w-full border !mt-4 p-2 rounded"
-                  />
-                  <textarea
-                    v-model="form.en.answer"
-                    placeholder="English Answer"
-                    class="w-full border !mt-4 p-2 rounded"
-                  ></textarea>
-                  <input
-                    v-model="form.en.category"
-                    placeholder="English Category"
-                    class="w-full border !mt-4 p-2 rounded"
-                  />
-                </div>
-
-                <div v-if="language === 'ar'">
-                  <input
-                    v-model="form.ar.question"
-                    placeholder="Arabic Question"
-                    class="w-full border !mt-4 p-2 rounded"
-                  />
-                  <textarea
-                    v-model="form.ar.answer"
-                    placeholder="Arabic Answer"
-                    class="w-full border !mt-4 p-2 rounded"
-                  ></textarea>
-                  <input
-                    v-model="form.ar.category"
-                    placeholder="Arabic Category"
-                    class="w-full border !mt-4 p-2 rounded"
-                  />
-                </div>
-
-                <!-- Save Button -->
-                <div class="text-right">
-                  <button
-                    @click="addKnowledgeItem"
-                    class="bg-green-500 hover:bg-green-600 text-white !mt-4 px-4 py-2 rounded"
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!--Bulk Actions-->
-      <div class="flex items-center p-1 px-6">
-        <el-checkbox
-          v-model="checkAll"
-          :indeterminate="isIndeterminate"
-          @change="handleCheckAllChange"
-        >
-          Select All
-        </el-checkbox>
-        <div class="flex px-3">
-          <el-button
-            v-if="checkedItems.length > 0"
-            type="danger"
-            size="small"
-            @click="confirmBulkDelete"
-            :disabled="checkedItems.length === 0"
-          >
-            Delete Selected ({{ checkedItems.length }})
-          </el-button>
-        </div>
-      </div>
-      <!-- Knowledge Items -->
-    <!-- Loading/Error States -->
-<div v-if="loading" class="flex justify-center py-8">
-  <i class="ri-loader-4-line animate-spin text-2xl text-orange-500"></i>
-</div>
-
-<div v-else-if="error" class="bg-red-50 text-red-600 p-4 rounded-lg mx-4">
-  {{ error }}
-</div>
-
-<div v-else-if="knowledgeItems.length === 0" class="bg-yellow-50 text-yellow-700 p-4 rounded-lg mx-4">
-  No knowledge items found.
-</div>
-
-<!-- Knowledge Items (only shows when not loading, no error, and has items) -->
-<div
-  v-for="(item, index) in filteredItems"
-  v-else
-  :key="item.id"
-  class="relative bg-white rounded-xl p-4 shadow flex flex-col gap-3 !mb-4 !mt-3"
-  :class="{ 'bg-orange-50 border border-orange-200': isItemChecked(index) }"
->
-  <!-- Your existing item content here -->
-  <div class="flex items-start gap-1">
-   <!-- Checkbox positioned to the left -->
-          <el-checkbox
-            v-model="checkedItems"
-            :value="getItemId(index)"
-            @change="handleCheckedItemsChange"
-            class="px-2"
+          <KnowledgeBaseModal
+            v-model="showModal"
+            :is-editing="editingIndex !== null"
+            :initial-data="form"
+            @save="addKnowledgeItem"
+            @cancel="resetForm"
           />
-          <div class="flex-1">
-            <!-- Top Right Icons -->
-            <div class="absolute top-3 right-3 flex gap-2 text-gray-400">
-              <button @click="editItem(index)" class="cursor-pointer hover:text-gray-600">
-                <i class="ri-pencil-line"></i>
-              </button>
-              <button @click="archiveItem(index)" class="cursor-pointer hover:text-gray-600">
-                <i class="ri-archive-line"></i>
-              </button>
-              <button
-                @click="deleteItem(index)"
-                class="cursor-pointer hover:text-red-600 text-red-400"
-              >
-                <i class="ri-delete-bin-line"></i>
-              </button>
-            </div>
+        </div>
+      </div>
 
-            <!-- Question -->
-            <div class="text-base font-medium text-gray-800 pr-16 !mb-3">{{ item.question }}</div>
 
-            <!-- Category & Preview -->
-            <div class="flex items-center gap-2 text-sm text-gray-600 !mb-3">
-              <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-1 py-0.5 rounded">
-                {{ item.category[0] }}
-              </span>
-              <span>{{ item.responsePreview }}</span>
-            </div>
+      <!-- Knowledge Base Select -->
+      <KnowledgeBaseSelect
+        v-model:selectedItems="checkedItems"
+        :total-items="filteredItems.length"
+        :item-ids="filteredItems.map(item => item.id)"
+        @bulk-delete="bulkDeleteItems"
+      />
+    </div>
 
-            <!-- Author & Date -->
-            <div class="text-xs text-gray-400 !mt-2">{{ item.author }} – {{ item.date }}</div>
+    <!-- Loading/Error States -->
+    <div v-if="loading" class="flex justify-center py-8">
+      <i class="ri-loader-4-line animate-spin text-2xl text-orange-500"></i>
+    </div>
+
+    <div v-else-if="error" class="bg-red-50 text-red-600 p-4 rounded-lg mx-4">
+      {{ error }}
+    </div>
+
+    <div v-else-if="knowledgeItems.length === 0" class="bg-yellow-50 text-yellow-700 p-4 rounded-lg mx-4">
+      No knowledge items found.
+    </div>
+
+    <!-- Knowledge Items List -->
+    <div
+      v-for="(item, index) in filteredItems"
+      v-else
+      :key="item.id"
+      class="relative bg-white rounded-xl p-4 shadow flex flex-col gap-3 !mb-4 !mt-3"
+      :class="{ 'bg-orange-50 border border-orange-200': isItemChecked(index) }"
+    >
+      <div class="flex items-start gap-1">
+        <!-- Checkbox positioned to the left -->
+        <el-checkbox
+          v-model="checkedItems"
+          :value="getItemId(index)"
+          @change="handleCheckedItemsChange"
+          class="px-2"
+        />
+        <div class="flex-1">
+          <!-- Top Right Icons -->
+          <div class="absolute top-3 right-3 flex gap-2 text-gray-400">
+            <button @click="editItem(index)" class="cursor-pointer hover:text-gray-600">
+              <i class="ri-pencil-line"></i>
+            </button>
+            <button @click="archiveItem(index)" class="cursor-pointer hover:text-gray-600">
+              <i class="ri-archive-line"></i>
+            </button>
+            <button
+              @click="deleteItem(index)"
+              class="cursor-pointer hover:text-red-600 text-red-400"
+            >
+              <i class="ri-delete-bin-line"></i>
+            </button>
           </div>
+
+          <!-- Question -->
+          <div class="text-base font-medium text-gray-800 pr-16 !mb-3">{{ item.question }}</div>
+
+          <!-- Category & Preview -->
+          <div class="flex items-center gap-2 text-sm text-gray-600 !mb-3">
+            <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-1 py-0.5 rounded">
+              {{ item.category[0] }}
+            </span>
+            <span>{{ item.responsePreview }}</span>
+          </div>
+
+          <!-- Author & Date -->
+          <div class="text-xs text-gray-400 !mt-2">{{ item.author }} – {{ item.date }}</div>
         </div>
       </div>
     </div>
@@ -244,33 +134,35 @@
 </template>
 
 <script setup>
-import { ref, computed , watch , onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import Papa from 'papaparse'
 import http from '../api/http'
 import { ElMessageBox, ElMessage } from 'element-plus'
-
+import KnowledgeBaseHeader from '../components/knowledge-base/KnowledgeBaseHeader.vue'
+import KnowledgeBaseTabs from '../components/knowledge-base/KnowledgeBaseTabs.vue'
+import KnowledgeBaseModal from '../components/knowledge-base/KnowledgeBaseModal.vue'
+import KnowledgeBaseSelect from '../components/knowledge-base/KnowledgeBaseSelect.vue'
 
 // Reactive state
 const checkAll = ref(false)
 const isIndeterminate = ref(false)
-const checkedItems = ref([]) // Stores IDs/Indicies of checked
+const checkedItems = ref([]) // Stores IDs of checked items
 const activeTab = ref('FAQs')
-const tabs = ref(['FAQs', 'Long-form Answers', 'API Responses', 'Archived'])
 const searchQuery = ref('')
 const searchType = ref('text')
 const showModal = ref(false)
-const language = ref('en')
-const form = ref({
-  en: { question: '', answer: '', category: '' },
-  ar: { question: '', answer: '', category: '' },
-})
 const editingIndex = ref(null)
 const showMoreIndex = ref(null)
 const archivedItems = ref([])
 const knowledgeItems = ref([])
 const loading = ref(false)
 const error = ref(null)
-//watch
+const form = ref({
+  en: { question: '', answer: '', category: '' },
+  ar: { question: '', answer: '', category: '' },
+})
+
+// Watch for search changes
 watch([searchQuery, searchType], () => {
   // Deselect any items when search/filter changes
   checkedItems.value = []
@@ -294,9 +186,6 @@ const filteredItems = computed(() => {
   return knowledgeItems.value
 })
 
-const selectedItems = computed(() => {
-  return knowledgeItems.value.filter((item) => checkedItems.value.includes(item.id))
-})
 // Helper functions
 const getItemId = (index) => {
   return knowledgeItems.value[index].id
@@ -305,17 +194,6 @@ const getItemId = (index) => {
 const isItemChecked = (index) => {
   return checkedItems.value.includes(getItemId(index))
 }
-// Checkbox group handlers
-const handleCheckAllChange = (val) => {
-  const idsInFiltered = filteredItems.value.map((item) => item.id)
-  if (val) {
-    checkedItems.value = [...idsInFiltered]
-  } else {
-    checkedItems.value = []
-  }
-  isIndeterminate.value = false
-}
-
 
 const handleCheckedItemsChange = () => {
   const filteredIds = filteredItems.value.map((item) => item.id)
@@ -334,7 +212,7 @@ const confirmBulkDelete = () => {
       confirmButtonText: 'Delete',
       cancelButtonText: 'Cancel',
       type: 'warning',
-    },
+    }
   )
     .then(() => {
       bulkDeleteItems()
@@ -343,8 +221,6 @@ const confirmBulkDelete = () => {
       ElMessage.info('Bulk delete canceled')
     })
 }
-
-
 
 // Methods
 
@@ -397,54 +273,31 @@ onMounted(fetchKnowledgeItems)
 
 const bulkDeleteItems = async () => {
   try {
-    const uuidsToDelete = [...checkedItems.value]
-
-    // Optimistically remove items from the UI
-    knowledgeItems.value = knowledgeItems.value.filter(
-      (item) => !uuidsToDelete.includes(item.id)
-    )
-    checkedItems.value = []
-    checkAll.value = false
-    isIndeterminate.value = false
-
-    // Make the backend DELETE request
-    await http.delete('/delete-documents', {
-      data: uuidsToDelete,  // This is the request body
-      params: { collection_name: 'FAQs' }, // This is the query param
+    const response = await http.delete('/delete-documents', {
+      data: checkedItems.value,
+      params: { collection_name: 'FAQs' }
     })
-
-    ElMessage.success(`Deleted ${uuidsToDelete.length} items successfully`)
-  } catch (error) {
-    console.error('Bulk delete error:', error)
-    ElMessage.error(error.response?.data?.detail?.message || 'Failed to delete items')
+    if (response.data.success) {
+      ElMessage.success('Items deleted successfully')
+      checkedItems.value = []
+      await fetchKnowledgeItems()
+    }
+  } catch (err) {
+    console.error('Error deleting items:', err)
+    ElMessage.error('Failed to delete items')
   }
 }
 
 function editItem(index) {
   const item = knowledgeItems.value[index]
-  language.value = 'en'
-  form.value = {
-    en: {
-      question: item.question,
-      answer: item.responsePreview,
-      category: item.category[0] || '',
-    },
-    ar: {
-      question: item.question_ar || '',
-      answer: item.answer_ar || '',
-      category: item.category_ar || '',
-    },
-  }
   editingIndex.value = index
   showModal.value = true
 }
-
 
 function archiveItem(index) {
   const item = knowledgeItems.value.splice(index, 1)[0]
   archivedItems.value.push(item)
 }
-// edited here for the delete
 
 async function deleteItem(index) {
   const item = knowledgeItems.value[index]
@@ -468,28 +321,31 @@ async function deleteItem(index) {
   }
 }
 
-//end of delete edited
-async function addKnowledgeItem() {
+async function addKnowledgeItem(formData) {
   try {
-    const documentData = {  // Single object instead of array
-      question_ar: form.value.ar.question,
-      answer_ar: form.value.ar.answer,
-      category_ar: form.value.ar.category,
-      question_en: form.value.en.question,
-      answer_en: form.value.en.answer,
-      category_en: form.value.en.category,
+    const documentData = {
+      question_ar: formData.ar.question,
+      answer_ar: formData.ar.answer,
+      category_ar: formData.ar.category,
+      question_en: formData.en.question,
+      answer_en: formData.en.answer,
+      category_en: formData.en.category,
     };
 
-    // Send with correct parameter structure
     const response = await http.post('/add-document',
-      { propert: documentData },  // Match backend field name
-      { params: { collectionName: 'faqs' } }  // Query parameter
+      { propert: documentData },  // This matches the backend's Document model
+      {
+        params: { collectionName: 'FAQs' },  // Changed to match the case in backend
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
     );
 
     const newItem = {
-      question: form.value.en.question,
-      responsePreview: form.value.en.answer,
-      category: [form.value.en.category],
+      question: formData.en.question,
+      responsePreview: formData.en.answer,
+      category: [formData.en.category],
       author: 'You',
       date: new Date().toLocaleString('en-US', {
         month: 'short',
@@ -508,9 +364,11 @@ async function addKnowledgeItem() {
     }
 
     resetForm()
+    ElMessage.success('Knowledge item added successfully')
     console.log('Document added successfully:', response.data)
   } catch (error) {
     console.error('Full error details:', error.response?.data)
+    ElMessage.error(error.response?.data?.detail?.message || 'Failed to add knowledge item')
     if (error.response?.data?.detail) {
       console.log(`Validation errors:\n${JSON.stringify(error.response.data.detail, null, 2)}`)
     }
@@ -518,11 +376,6 @@ async function addKnowledgeItem() {
 }
 
 function resetForm() {
-  form.value = {
-    en: { question: '', answer: '', category: '' },
-    ar: { question: '', answer: '', category: '' },
-  }
-  language.value = 'en'
   editingIndex.value = null
   showModal.value = false
 }
