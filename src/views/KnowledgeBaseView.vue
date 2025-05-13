@@ -176,14 +176,30 @@
         </div>
       </div>
       <!-- Knowledge Items -->
-      <div
-        v-for="(item, index) in filteredItems"
-        :key="index"
-        class="relative bg-white rounded-xl p-4 shadow flex flex-col gap-3 !mb-4 !mt-3"
-        :class="{ 'bg-orange-50 border border-orange-200': isItemChecked(index) }"
-      >
-        <div class="flex items-start gap-1">
-          <!-- Checkbox positioned to the left -->
+    <!-- Loading/Error States -->
+<div v-if="loading" class="flex justify-center py-8">
+  <i class="ri-loader-4-line animate-spin text-2xl text-orange-500"></i>
+</div>
+
+<div v-else-if="error" class="bg-red-50 text-red-600 p-4 rounded-lg mx-4">
+  {{ error }}
+</div>
+
+<div v-else-if="knowledgeItems.length === 0" class="bg-yellow-50 text-yellow-700 p-4 rounded-lg mx-4">
+  No knowledge items found.
+</div>
+
+<!-- Knowledge Items (only shows when not loading, no error, and has items) -->
+<div
+  v-for="(item, index) in filteredItems"
+  v-else
+  :key="item.id"
+  class="relative bg-white rounded-xl p-4 shadow flex flex-col gap-3 !mb-4 !mt-3"
+  :class="{ 'bg-orange-50 border border-orange-200': isItemChecked(index) }"
+>
+  <!-- Your existing item content here -->
+  <div class="flex items-start gap-1">
+   <!-- Checkbox positioned to the left -->
           <el-checkbox
             v-model="checkedItems"
             :value="getItemId(index)"
@@ -228,10 +244,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed , watch , onMounted } from 'vue'
 import Papa from 'papaparse'
 import http from '../api/http'
 import { ElMessageBox, ElMessage } from 'element-plus'
+
 
 // Reactive state
 const checkAll = ref(false)
@@ -250,42 +267,16 @@ const form = ref({
 const editingIndex = ref(null)
 const showMoreIndex = ref(null)
 const archivedItems = ref([])
-const knowledgeItems = ref([
-  {
-    id: 1,
-    question: 'What is the BeeOrder Loyalty Program?',
-    responsePreview: 'The BeeOrder Loyalty Program lets you earn points...',
-    category: ['Loyalty Program'],
-    author: 'Jane Doe',
-    date: 'Mar 12, 2025 – 10:45 AM',
-  },
-  {
-    question: "Why don't all the restaurants and stores appear in the app for me?",
-    responsePreview:
-      'You may not see all the restaurants and stores in the app due to: Delivery Range: Each restaurant has...',
-    category: ['BeeOrder Guide'],
-    author: 'Jane Doe',
-    date: 'Feb 28, 2024 – 3:15 PM',
-  },
-  {
-    id: 2,
-    question: 'How can I make an e-payment via Bemo?',
-    responsePreview:
-      '1 - Ensure that the phone number linked to your BeeOrder app matches the phone number...',
-    category: ['E-Payment'],
-    author: 'Jane Doe',
-    date: 'Jan 05, 2023 – 8:30 AM',
-  },
-  {
-    id: 3,
-    question: 'How can I change items in my order?',
-    responsePreview:
-      '1 - Contact customer service.\n2 - Provide your order number and the requested changes. if the restaurant has...',
-    category: ['Help with an Order'],
-    author: 'Jane Doe',
-    date: 'Oct 19, 2022 – 6:50 PM',
-  },
-])
+const knowledgeItems = ref([])
+const loading = ref(false)
+const error = ref(null)
+//watch
+watch([searchQuery, searchType], () => {
+  // Deselect any items when search/filter changes
+  checkedItems.value = []
+  checkAll.value = false
+  isIndeterminate.value = false
+})
 
 // Computed properties
 const filteredItems = computed(() => {
@@ -316,15 +307,24 @@ const isItemChecked = (index) => {
 }
 // Checkbox group handlers
 const handleCheckAllChange = (val) => {
-  checkedItems.value = val ? filteredItems.value.map((item) => item.id) : []
+  const idsInFiltered = filteredItems.value.map((item) => item.id)
+  if (val) {
+    checkedItems.value = [...idsInFiltered]
+  } else {
+    checkedItems.value = []
+  }
   isIndeterminate.value = false
 }
 
+
 const handleCheckedItemsChange = () => {
-  const checkedCount = checkedItems.value.length
-  checkAll.value = checkedCount === filteredItems.value.length
-  isIndeterminate.value = checkedCount > 0 && checkedCount < filteredItems.value.length
+  const filteredIds = filteredItems.value.map((item) => item.id)
+  const checkedCount = checkedItems.value.filter(id => filteredIds.includes(id)).length
+
+  checkAll.value = checkedCount === filteredIds.length
+  isIndeterminate.value = checkedCount > 0 && checkedCount < filteredIds.length
 }
+
 // Bulk delete confirmation
 const confirmBulkDelete = () => {
   ElMessageBox.confirm(
@@ -343,24 +343,83 @@ const confirmBulkDelete = () => {
       ElMessage.info('Bulk delete canceled')
     })
 }
+
+
+
 // Methods
+
+// fetch chunks
+const fetchKnowledgeItems = async () => {
+  try {
+    loading.value = true;
+    error.value = null;
+    const response = await http.get('/chunks', {
+      params: { collection_name: 'FAQs' },
+      timeout: 30000
+    });
+
+    // Handle the nested response structure
+    if (!response.data?.chunks?.objects) {
+      throw new Error('Invalid response format - missing objects array');
+    }
+
+    knowledgeItems.value = response.data.chunks.objects.map(chunk => ({
+      id: chunk.uuid,
+      question: chunk.properties.question_en,
+      responsePreview: chunk.properties.answer_en,
+      category: [chunk.properties.category_en],
+      question_ar: chunk.properties.question_ar,
+      answer_ar: chunk.properties.answer_ar,
+      category_ar: chunk.properties.category_ar,
+      author: 'Admin',
+      date: new Date().toLocaleString('en-US', {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+    }));
+  } catch (err) {
+    console.error('Fetch error:', err);
+    error.value = err.response?.data?.detail ||
+                 err.message ||
+                 'Failed to load knowledge base';
+    ElMessage.error(error.value);
+  } finally {
+    loading.value = false;
+  }
+}
+
+// load data when component mounts
+onMounted(fetchKnowledgeItems)
+
 const bulkDeleteItems = async () => {
   try {
-    const deleteCount = checkedItems.value.length // Store count first
-    knowledgeItems.value = knowledgeItems.value.filter(
-      (item) => !checkedItems.value.includes(item.id),
-    )
+    const uuidsToDelete = [...checkedItems.value]
 
+    // Optimistically remove items from the UI
+    knowledgeItems.value = knowledgeItems.value.filter(
+      (item) => !uuidsToDelete.includes(item.id)
+    )
     checkedItems.value = []
     checkAll.value = false
     isIndeterminate.value = false
 
-    ElMessage.success(`Deleted ${deleteCount} items successfully`)
+    // Make the backend DELETE request
+    await http.delete('/delete-documents', {
+      data: uuidsToDelete,  // This is the request body
+      params: { collection_name: 'FAQs' }, // This is the query param
+    })
+
+    ElMessage.success(`Deleted ${uuidsToDelete.length} items successfully`)
   } catch (error) {
-    ElMessage.error('Failed to delete items')
     console.error('Bulk delete error:', error)
+    ElMessage.error(error.response?.data?.detail?.message || 'Failed to delete items')
   }
 }
+
 function editItem(index) {
   const item = knowledgeItems.value[index]
   language.value = 'en'
@@ -370,22 +429,46 @@ function editItem(index) {
       answer: item.responsePreview,
       category: item.category[0] || '',
     },
-    ar: { question: '', answer: '', category: '' },
+    ar: {
+      question: item.question_ar || '',
+      answer: item.answer_ar || '',
+      category: item.category_ar || '',
+    },
   }
   editingIndex.value = index
   showModal.value = true
 }
 
+
 function archiveItem(index) {
   const item = knowledgeItems.value.splice(index, 1)[0]
   archivedItems.value.push(item)
 }
+// edited here for the delete
 
-function deleteItem(index) {
-  knowledgeItems.value.splice(index, 1)
-  showMoreIndex.value = null
+async function deleteItem(index) {
+  const item = knowledgeItems.value[index]
+
+  try {
+    await http.delete('/delete-document', {
+      params: {
+        uuid: item.id,
+        collection_name: 'FAQs'
+      }
+    })
+
+    knowledgeItems.value.splice(index, 1)
+    showMoreIndex.value = null
+    ElMessage.success(`Item deleted successfully`)
+  } catch (error) {
+    console.error('Delete error:', error)
+    ElMessage.error(
+      error.response?.data?.detail?.message || 'Failed to delete item'
+    )
+  }
 }
 
+//end of delete edited
 async function addKnowledgeItem() {
   try {
     const documentData = {  // Single object instead of array

@@ -16,8 +16,7 @@ const handleLogin = async () => {
 
   try {
     isLoading.value = true
-    // TODO: Implement actual login logic here
-    await new Promise((resolve) => setTimeout(resolve, 1000)) // Simulated API call
+    await new Promise((resolve) => setTimeout(resolve, 1000))
     router.push('/dashboard')
   } catch (e) {
     errorMessage.value = 'Invalid credentials'
@@ -29,70 +28,76 @@ const handleLogin = async () => {
 
 <template>
   <div class="min-h-screen w-full flex items-center justify-center bg-background-soft">
-    <div class="max-w-md w-full mx-4 space-y-6 bg-background p-8 rounded-xl shadow-lg border border-border transform transition-all">
+    <div class="max-w-md w-full mx-4 space-y-10 bg-background p-10 rounded-xl shadow-lg border border-border">
 
-      <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-heading">
+      <!-- headline -->
+      <div class="mb-30">
+        <h2 class="text-center text-3xl font-extrabold text-heading">
           Sign in to your account
         </h2>
-        <p class="mt-2 text-center text-sm text-text-soft">
+        <p class="mt-4 text-center text-sm text-text-soft">
           Or
-          <router-link to="/register" class="font-medium text-primary hover:text-primary-hover"
-            >create a new account</router-link
-          >
+          <router-link to="/register" class="font-medium text-primary hover:text-primary-hover">
+            create a new account
+          </router-link>
         </p>
       </div>
-      <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
-        <div class="rounded-md shadow-sm space-y-4">
+
+      <!-- form -->
+      <form class="  space-y-1" @submit.prevent="handleLogin">
+        <div class="space-y-6">
+          <!-- email -->
           <div>
-            <label for="email" class="block text-sm font-medium text-text">Email address</label>
+            <label for="email" class="block text-sm font-medium text-text mb-2">Email address</label>
             <input
               id="email"
               v-model="email"
               name="email"
               type="email"
               required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-border placeholder-text-soft text-text rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-background-soft"
+              class="block w-full px-4 py-3 border border-border placeholder-text-soft text-text rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-background-soft"
               placeholder="Enter your email"
             />
           </div>
+
+          <!-- pass -->
           <div>
-            <label for="password" class="block text-sm font-medium text-text">Password</label>
+            <label for="password" class="block text-sm font-medium text-text mb-2">Password</label>
             <input
               id="password"
               v-model="password"
               name="password"
               type="password"
               required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-border placeholder-text-soft text-text rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-background-soft"
+              class="block w-full px-4 py-3 border border-border placeholder-text-soft text-text rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-background-soft"
               placeholder="Enter your password"
             />
           </div>
         </div>
 
-        <div class="flex items-center justify-between">
+        <!--remember me and forgot the pass -->
+        <div class="flex items-center justify-between mt-6">
           <div class="flex items-center">
             <input
               id="remember-me"
               name="remember-me"
               type="checkbox"
-              class="h-4 w-4 text-primary focus:ring-primary border-border rounded bg-background-soft"
+              class="h-10 w-4 text-primary focus:ring-primary border-border rounded bg-background-soft"
             />
             <label for="remember-me" class="ml-2 block text-sm text-text">Remember me</label>
           </div>
 
           <div class="text-sm">
-            <a href="#" class="font-medium text-primary hover:text-primary-hover"
-              >Forgot your password?</a
-            >
+            <a href="#" class="font-medium text-primary hover:text-primary-hover">Forgot your password?</a>
           </div>
         </div>
 
-        <div>
+        <!-- log in button-->
+        <div class="pt-4">
           <button
             type="submit"
             :disabled="isLoading"
-            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-log-in-button hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span class="absolute left-0 inset-y-0 flex items-center pl-3">
               <svg
@@ -135,7 +140,8 @@ const handleLogin = async () => {
           </button>
         </div>
 
-        <div v-if="errorMessage" class="mt-4 text-sm text-center text-danger">
+        <!--  error messgae -->
+        <div v-if="errorMessage" class="pt-4 text-sm text-center text-danger">
           {{ errorMessage }}
         </div>
       </form>

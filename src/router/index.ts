@@ -2,8 +2,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginPage from '../views/LoginPage.vue'
 import RegisterPage from '../views/RegisterPage.vue'
-import ApiExampleView from '../views/ApiExampleView.vue'
-import TanstackApiView from '../views/TanstackApiView.vue'
+import AnalyticsandReports from '../views/AnalyticsandReports.vue'
+import KnowledgeBaseView from '../views/KnowledgeBaseView.vue'
+import DeveloperTools from '../views/DeveloperTools.vue'
+import SettingsView from '../views/SettingsView.vue'
+import NotificationsAlerts from '../views/NotificationsAlerts.vue'
+import LogoutView from '../views/LogoutView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,7 +23,7 @@ const router = createRouter({
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('../views/KnowledgeBaseView.vue'),
+      component: KnowledgeBaseView,
     },
     {
       path: '/login',
@@ -34,13 +38,33 @@ const router = createRouter({
     {
       path: '/api-example',
       name: 'api-example',
-      component: ApiExampleView,
+      component: AnalyticsandReports,
     },
     {
       path: '/tanstack-api',
-      name: 'tanstack-api',
-      component: TanstackApiView,
+      name: 'Developer Tools',
+      component: DeveloperTools,
+      meta: { sidebar: true },
     },
+    {
+      path: '/settings',
+      name: 'Settings',
+      component: SettingsView,
+      meta: { sidebar: true },
+    },
+    {
+      path: '/notifications-alerts',
+      name: 'Notifications & Alerts',
+      component: NotificationsAlerts,
+      meta: { sidebar: true },
+    },
+    {
+      path: '/logout',
+      name: 'Logout',
+      component: LogoutView,
+      meta: { sidebar: true },
+    },
+
   ],
 })
 

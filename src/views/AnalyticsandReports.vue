@@ -91,7 +91,7 @@ async function deletePost(id: number) {
 
 <template>
   <div class="api-example">
-    <h1 class="text-2xl font-bold mb-6">API Example Page</h1>
+    <h1 class="text-2xl font-bold mb-6">Analytics & Reports</h1>
 
     <!-- Error display -->
     <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">

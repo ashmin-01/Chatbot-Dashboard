@@ -35,6 +35,8 @@
   --color-text: #333333;
   --color-text-soft: #6B6B6B;
   --color-icon: #6B6B6B;
+
+
 }
 
 
@@ -55,6 +57,9 @@
 *::after {
   box-sizing: border-box;
   margin: 0;
+}
+.bg-log-in-button {
+  background-color: var(--color-sidebar-icon-selected);
 }
 
 body {

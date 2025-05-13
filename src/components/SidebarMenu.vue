@@ -25,9 +25,9 @@ const mainMenu = [
 ]
 
 const footerMenu = [
-  { icon: settingsIcon, label: 'Settings', route: '/tanstack-api' },
-  { icon: notificationsIcon, label: 'Notifications & Alerts', route: '/tanstack-api' },
-  { icon: logoutIcon, label: 'Logout', route: '/tanstack-api' },
+{ icon: settingsIcon, label: 'Settings', route: '/settings' },
+  { icon: notificationsIcon, label: 'Notifications & Alerts', route: '/notifications' },
+  { icon: logoutIcon, label: 'Logout', route: '/logout' },
 ]
 
 const collapsed = ref(false)
@@ -79,7 +79,7 @@ const currentRoute = computed(() => route.path)
         :key="item.label"
         :item="item"
         :collapsed="collapsed"
-        :is-active="currentRoute === item.route" 
+        :is-active="currentRoute === item.route"
       />
     </div>
 

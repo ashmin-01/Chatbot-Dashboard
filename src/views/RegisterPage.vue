@@ -36,80 +36,85 @@ const handleRegister = async () => {
     isLoading.value = false
   }
 }
-</script>
 
+</script>
 <template>
   <div class="min-h-screen w-full flex items-center justify-center bg-background-soft">
-    <div class="max-w-md w-full mx-4 space-y-6 bg-background p-8 rounded-xl shadow-lg border border-border transform transition-all">
+    <div class="max-w-md w-full mx-4 space-y-10 bg-background p-10 rounded-xl shadow-lg border border-border transition-all">
 
-      <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-heading">Create your account</h2>
-        <p class="mt-2 text-center text-sm text-text-soft">
+      <!-- العنوان -->
+      <div class="mb-8">
+        <h2 class="text-center text-3xl font-extrabold text-heading">Create your account</h2>
+        <p class="mt-4 text-center text-sm text-text-soft">
           Or
-          <router-link to="/login" class="font-medium text-primary hover:text-primary-hover"
-            >sign in to your account</router-link
-          >
+          <router-link to="/login" class="font-medium text-primary hover:text-primary-hover">
+            sign in to your account
+          </router-link>
         </p>
       </div>
-      <form class="mt-8 space-y-6" @submit.prevent="handleRegister">
-        <div class="rounded-md shadow-sm space-y-4">
+
+      <!-- الفورم -->
+      <form class="space-y-8" @submit.prevent="handleRegister">
+        <div class="space-y-6">
           <div>
-            <label for="name" class="block text-sm font-medium text-text">Full Name</label>
+            <label for="name" class="block text-sm font-medium text-text mb-2">Full Name</label>
             <input
               id="name"
               v-model="name"
               name="name"
               type="text"
               required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-border placeholder-text-soft text-text rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-background-soft"
+              class="block w-full px-4 py-3 border border-border placeholder-text-soft text-text rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-background-soft"
               placeholder="Enter your full name"
             />
           </div>
+
           <div>
-            <label for="email" class="block text-sm font-medium text-text">Email address</label>
+            <label for="email" class="block text-sm font-medium text-text mb-2">Email address</label>
             <input
               id="email"
               v-model="email"
               name="email"
               type="email"
               required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-border placeholder-text-soft text-text rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-background-soft"
+              class="block w-full px-4 py-3 border border-border placeholder-text-soft text-text rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-background-soft"
               placeholder="Enter your email"
             />
           </div>
+
           <div>
-            <label for="password" class="block text-sm font-medium text-text">Password</label>
+            <label for="password" class="block text-sm font-medium text-text mb-2">Password</label>
             <input
               id="password"
               v-model="password"
               name="password"
               type="password"
               required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-border placeholder-text-soft text-text rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-background-soft"
+              class="block w-full px-4 py-3 border border-border placeholder-text-soft text-text rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-background-soft"
               placeholder="Create a password"
             />
           </div>
+
           <div>
-            <label for="confirm-password" class="block text-sm font-medium text-text"
-              >Confirm Password</label
-            >
+            <label for="confirm-password" class="block text-sm font-medium text-text mb-2">Confirm Password</label>
             <input
               id="confirm-password"
               v-model="confirmPassword"
               name="confirm-password"
               type="password"
               required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-border placeholder-text-soft text-text rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-background-soft"
+              class="block w-full px-4 py-3 border border-border placeholder-text-soft text-text rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm bg-background-soft"
               placeholder="Confirm your password"
             />
           </div>
         </div>
 
-        <div>
+        <!-- زر الإنشاء -->
+        <div class="pt-4">
           <button
             type="submit"
             :disabled="isLoading"
-            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-log-in-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span class="absolute left-0 inset-y-0 flex items-center pl-3">
               <svg
@@ -152,7 +157,8 @@ const handleRegister = async () => {
           </button>
         </div>
 
-        <div v-if="errorMessage" class="mt-4 text-sm text-center text-danger">
+        <!-- رسالة الخطأ -->
+        <div v-if="errorMessage" class="pt-4 text-sm text-center text-danger">
           {{ errorMessage }}
         </div>
       </form>

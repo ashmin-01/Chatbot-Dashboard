@@ -8,6 +8,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    Card: typeof import('./src/components/Cards/Card.vue')['default']
+    ChartCard: typeof import('./src/components/Cards/ChartCard.vue')['default']
     DashboardHeader: typeof import('./src/components/DashboardHeader.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
@@ -30,6 +32,8 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     SidebarLink: typeof import('./src/components/SidebarLink.vue')['default']
     SidebarMenu: typeof import('./src/components/SidebarMenu.vue')['default']
+    StatsCard: typeof import('./src/components/Cards/StatsCard.vue')['default']
+    Table: typeof import('./src/components/Table.vue')['default']
     TextInput: typeof import('./src/components/input/TextInput.vue')['default']
     ThemeSwitch: typeof import('./src/components/ThemeSwitch.vue')['default']
     TheWelcome: typeof import('./src/components/TheWelcome.vue')['default']

@@ -9,6 +9,7 @@ import { VueQueryPlugin, vueQueryPluginOptions } from './tanstack'
 import { i18n, initializeI18n } from './i18n'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+import 'remixicon/fonts/remixicon.css'
 // if you just want to import css
 import 'element-plus/theme-chalk/dark/css-vars.css'
 
