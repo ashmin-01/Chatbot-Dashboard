@@ -7,128 +7,69 @@
     <KnowledgeBaseTabs v-model:activeTab="activeTab" />
 
     <!-- Tab Content -->
-    <div v-if="activeTab === 'FAQs'" class="space-y-3">
-      <!-- Search + Buttons inside FAQs tab -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between !mb-3 gap-3">
-        <div class="flex gap-2 w-full sm:w-1/2">
-          <select
-            v-model="searchType"
-            class="border border-gray-300 rounded px-2 py-1 text-sm text-gray-600"
-          >
-            <option value="text">Search by Text</option>
-            <option value="category">Search by Category</option>
-          </select>
-          <input
-            v-model="searchQuery"
-            type="text"
-            :placeholder="searchType === 'text' ? 'Search questions...' : 'Search category...'"
-            class="flex-1 px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400"
+    <div class="space-y-3">
+      <!-- FAQs Tab -->
+      <template v-if="activeTab === 'FAQs'">
+        <!-- Search + Buttons -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between !mb-3 gap-3">
+          <KnowledgeBaseSearch v-model="searchState" />
+          <KnowledgeBaseActions
+            @add="showModal = true"
+            @file-upload="handleFileUpload"
           />
         </div>
-        <div class="flex gap-2">
-          <!-- Add Knowledge Item Button triggers this -->
-          <button
-            @click="showModal = true"
-            class="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-2 rounded"
-          >
-            + Add Knowledge Item
-          </button>
-          <!-- Import Button -->
-          <button
-            @click="$refs.fileInput.click()"
-            class="cursor-pointer border border-orange-400 text-orange-500 hover:bg-orange-50 font-medium px-4 py-2 rounded"
-          >
-            Import
-          </button>
-          <input
-            ref="fileInput"
-            type="file"
-            accept=".csv, application/json, .json, .xlsx"
-            @change="handleFileUpload"
-            class="hidden"
-          />
-          <!-- Modal -->
-          <KnowledgeBaseModal
-            v-model="showModal"
-            :is-editing="editingIndex !== null"
-            :initial-data="form"
-            @save="addKnowledgeItem"
-            @cancel="resetForm"
-          />
-        </div>
-      </div>
 
-
-      <!-- Knowledge Base Select -->
-      <KnowledgeBaseSelect
-        v-model:selectedItems="checkedItems"
-        :total-items="filteredItems.length"
-        :item-ids="filteredItems.map(item => item.id)"
-        @bulk-delete="bulkDeleteItems"
-      />
-    </div>
-
-    <!-- Loading/Error States -->
-    <div v-if="loading" class="flex justify-center py-8">
-      <i class="ri-loader-4-line animate-spin text-2xl text-orange-500"></i>
-    </div>
-
-    <div v-else-if="error" class="bg-red-50 text-red-600 p-4 rounded-lg mx-4">
-      {{ error }}
-    </div>
-
-    <div v-else-if="knowledgeItems.length === 0" class="bg-yellow-50 text-yellow-700 p-4 rounded-lg mx-4">
-      No knowledge items found.
-    </div>
-
-    <!-- Knowledge Items List -->
-    <div
-      v-for="(item, index) in filteredItems"
-      v-else
-      :key="item.id"
-      class="relative bg-white rounded-xl p-4 shadow flex flex-col gap-3 !mb-4 !mt-3"
-      :class="{ 'bg-orange-50 border border-orange-200': isItemChecked(index) }"
-    >
-      <div class="flex items-start gap-1">
-        <!-- Checkbox positioned to the left -->
-        <el-checkbox
-          v-model="checkedItems"
-          :value="getItemId(index)"
-          @change="handleCheckedItemsChange"
-          class="px-2"
+        <!-- Knowledge Base Select -->
+        <KnowledgeBaseSelect
+          v-model:selectedItems="checkedItems"
+          :total-items="filteredItems.length"
+          :item-ids="filteredItems.map(item => item.id)"
+          @bulk-delete="bulkDeleteItems"
         />
-        <div class="flex-1">
-          <!-- Top Right Icons -->
-          <div class="absolute top-3 right-3 flex gap-2 text-gray-400">
-            <button @click="editItem(index)" class="cursor-pointer hover:text-gray-600">
-              <i class="ri-pencil-line"></i>
-            </button>
-            <button @click="archiveItem(index)" class="cursor-pointer hover:text-gray-600">
-              <i class="ri-archive-line"></i>
-            </button>
-            <button
-              @click="deleteItem(index)"
-              class="cursor-pointer hover:text-red-600 text-red-400"
-            >
-              <i class="ri-delete-bin-line"></i>
-            </button>
-          </div>
 
-          <!-- Question -->
-          <div class="text-base font-medium text-gray-800 pr-16 !mb-3">{{ item.question }}</div>
+        <!-- Knowledge Base Modal -->
+        <KnowledgeBaseModal
+          v-model="showModal"
+          :is-editing="editingIndex !== null"
+          :initial-data="form"
+          @save="addKnowledgeItem"
+          @cancel="resetForm"
+        />
 
-          <!-- Category & Preview -->
-          <div class="flex items-center gap-2 text-sm text-gray-600 !mb-3">
-            <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-1 py-0.5 rounded">
-              {{ item.category[0] }}
-            </span>
-            <span>{{ item.responsePreview }}</span>
-          </div>
-
-          <!-- Author & Date -->
-          <div class="text-xs text-gray-400 !mt-2">{{ item.author }} – {{ item.date }}</div>
+        <!-- Loading/Error States -->
+        <div v-if="loading" class="flex justify-center py-8">
+          <i class="ri-loader-4-line animate-spin text-2xl text-orange-500"></i>
         </div>
-      </div>
+
+        <div v-else-if="error" class="bg-red-50 text-red-600 p-4 rounded-lg mx-4">
+          {{ error }}
+        </div>
+
+        <div v-else-if="knowledgeItems.length === 0" class="bg-yellow-50 text-yellow-700 p-4 rounded-lg mx-4">
+          No knowledge items found.
+        </div>
+
+        <!-- Knowledge Items List -->
+        <template v-else>
+          <KnowledgeBaseItem
+            v-for="(item, index) in filteredItems"
+            :key="item.id"
+            :item="item"
+            :is-checked="isItemChecked(index)"
+            @update:checked="(checked) => handleItemCheck(index, checked)"
+            @edit="editItem(index)"
+            @archive="archiveItem(index)"
+            @delete="deleteItem(index)"
+          />
+        </template>
+      </template>
+
+      <!-- Other Tabs -->
+      <template v-else>
+        <div class="bg-yellow-50 text-yellow-700 p-4 rounded-lg mx-4">
+          {{ activeTab }} content coming soon...
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -142,14 +83,17 @@ import KnowledgeBaseHeader from '../components/knowledge-base/KnowledgeBaseHeade
 import KnowledgeBaseTabs from '../components/knowledge-base/KnowledgeBaseTabs.vue'
 import KnowledgeBaseModal from '../components/knowledge-base/KnowledgeBaseModal.vue'
 import KnowledgeBaseSelect from '../components/knowledge-base/KnowledgeBaseSelect.vue'
+import KnowledgeBaseSearch from '../components/knowledge-base/KnowledgeBaseSearch.vue'
+import KnowledgeBaseItem from '../components/knowledge-base/KnowledgeBaseItem.vue'
+import KnowledgeBaseActions from '../components/knowledge-base/KnowledgeBaseActions.vue'
 
 // Reactive state
-const checkAll = ref(false)
-const isIndeterminate = ref(false)
+const searchState = ref({
+  query: '',
+  type: 'text'
+})
 const checkedItems = ref([]) // Stores IDs of checked items
 const activeTab = ref('FAQs')
-const searchQuery = ref('')
-const searchType = ref('text')
 const showModal = ref(false)
 const editingIndex = ref(null)
 const showMoreIndex = ref(null)
@@ -163,24 +107,23 @@ const form = ref({
 })
 
 // Watch for search changes
-watch([searchQuery, searchType], () => {
+watch(() => searchState.value, () => {
   // Deselect any items when search/filter changes
   checkedItems.value = []
-  checkAll.value = false
-  isIndeterminate.value = false
-})
+}, { deep: true })
 
 // Computed properties
 const filteredItems = computed(() => {
-  if (searchType.value === 'text') {
+  const { query, type } = searchState.value
+  if (type === 'text') {
     return knowledgeItems.value.filter(
       (item) =>
-        item.question.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        item.responsePreview.toLowerCase().includes(searchQuery.value.toLowerCase()),
+        item.question.toLowerCase().includes(query.toLowerCase()) ||
+        item.responsePreview.toLowerCase().includes(query.toLowerCase()),
     )
-  } else if (searchType.value === 'category') {
+  } else if (type === 'category') {
     return knowledgeItems.value.filter((item) =>
-      item.category[0].toLowerCase().includes(searchQuery.value.toLowerCase()),
+      item.category[0].toLowerCase().includes(query.toLowerCase()),
     )
   }
   return knowledgeItems.value
@@ -195,12 +138,16 @@ const isItemChecked = (index) => {
   return checkedItems.value.includes(getItemId(index))
 }
 
-const handleCheckedItemsChange = () => {
-  const filteredIds = filteredItems.value.map((item) => item.id)
-  const checkedCount = checkedItems.value.filter(id => filteredIds.includes(id)).length
-
-  checkAll.value = checkedCount === filteredIds.length
-  isIndeterminate.value = checkedCount > 0 && checkedCount < filteredIds.length
+const handleItemCheck = (index, checked) => {
+  const itemId = getItemId(index)
+  if (checked) {
+    checkedItems.value.push(itemId)
+  } else {
+    const itemIndex = checkedItems.value.indexOf(itemId)
+    if (itemIndex > -1) {
+      checkedItems.value.splice(itemIndex, 1)
+    }
+  }
 }
 
 // Bulk delete confirmation
