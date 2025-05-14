@@ -11,7 +11,7 @@
       <!-- FAQs Tab -->
       <template v-if="activeTab === 'FAQs'">
         <!-- Search + Buttons -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between !mb-3 gap-3">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between !mb-3 gap-3">
           <KnowledgeBaseSearch v-model="searchState" />
           <KnowledgeBaseActions
             @add="showModal = true"
@@ -38,24 +38,24 @@
 
 
 
-        <!-- Loading/Error States -->
-        <div v-if="loading" class="flex justify-center py-8">
-          <i class="ri-loader-4-line animate-spin text-2xl text-orange-500"></i>
-        </div>
+    <!-- Loading/Error States -->
+<div v-if="loading" class="flex justify-center py-8">
+  <i class="ri-loader-4-line animate-spin text-2xl text-orange-500"></i>
+</div>
 
-        <div v-else-if="error" class="bg-red-50 text-red-600 p-4 rounded-lg mx-4">
-          {{ error }}
-        </div>
+<div v-else-if="error" class="bg-red-50 text-red-600 p-4 rounded-lg mx-4">
+  {{ error }}
+</div>
 
-        <div v-else-if="knowledgeItems.length === 0" class="bg-yellow-50 text-yellow-700 p-4 rounded-lg mx-4">
-          No knowledge items found.
-        </div>
+<div v-else-if="knowledgeItems.length === 0" class="bg-yellow-50 text-yellow-700 p-4 rounded-lg mx-4">
+  No knowledge items found.
+</div>
 
         <!-- Knowledge Items List -->
         <template v-else>
           <KnowledgeBaseItem
-            v-for="(item, index) in filteredItems"
-            :key="item.id"
+  v-for="(item, index) in filteredItems"
+  :key="item.id"
             :item="item"
             :is-checked="isItemChecked(index)"
             @update:checked="(checked) => handleItemCheck(index, checked)"
@@ -64,6 +64,38 @@
             @delete="deleteItem(index)"
           />
         </template>
+      </template>
+
+      <!-- API Responses Tab -->
+      <template v-else-if="activeTab === 'API Responses'">
+        <KnowledgeBaseApiList
+          :apis="apiResponses"
+          @add="showApiModal = true"
+          @edit="editApi"
+          @archive="archiveApi"
+          @delete="deleteApi"
+        />
+
+        <KnowledgeBaseApiModal
+          v-model="showApiModal"
+          :is-editing="editingApiIndex !== null"
+          :initial-data="apiForm"
+          @save="addApiResponse"
+          @cancel="resetApiForm"
+        />
+
+        <!-- API Loading/Error States -->
+        <div v-if="apiLoading" class="flex justify-center py-8">
+          <i class="ri-loader-4-line animate-spin text-2xl text-orange-500"></i>
+            </div>
+
+        <div v-else-if="apiError" class="bg-red-50 text-red-600 p-4 rounded-lg mx-4">
+          {{ apiError }}
+            </div>
+
+        <div v-else-if="apiResponses.length === 0" class="bg-yellow-50 text-yellow-700 p-4 rounded-lg mx-4">
+          No API responses found.
+          </div>
       </template>
 
       <!-- Other Tabs -->
@@ -88,6 +120,8 @@ import KnowledgeBaseSelect from '../components/knowledge-base/KnowledgeBaseSelec
 import KnowledgeBaseSearch from '../components/knowledge-base/KnowledgeBaseSearch.vue'
 import KnowledgeBaseItem from '../components/knowledge-base/KnowledgeBaseItem.vue'
 import KnowledgeBaseActions from '../components/knowledge-base/KnowledgeBaseActions.vue'
+import KnowledgeBaseApiList from '../components/knowledge-base/KnowledgeBaseApiList.vue'
+import KnowledgeBaseApiModal from '../components/knowledge-base/KnowledgeBaseApiModal.vue'
 
 // Reactive state
 const searchState = ref({
@@ -106,6 +140,19 @@ const error = ref(null)
 const form = ref({
   en: { question: '', answer: '', category: '' },
   ar: { question: '', answer: '', category: '' },
+})
+
+// API Responses state
+const apiResponses = ref([])
+const showApiModal = ref(false)
+const editingApiIndex = ref(null)
+const apiLoading = ref(false)
+const apiError = ref(null)
+const apiForm = ref({
+  name: '',
+  url: '',
+  description: '',
+  headers: ''
 })
 
 // Watch for search changes
@@ -225,7 +272,10 @@ const fetchKnowledgeItems = async () => {
 }
 
 // load data when component mounts
-onMounted(fetchKnowledgeItems)
+onMounted(() => {
+  fetchKnowledgeItems()
+  fetchApiResponses()
+})
 
 const bulkDeleteItems = async () => {
   try {
@@ -480,6 +530,72 @@ function insertParsedItems(data) {
   }))
 
   knowledgeItems.value.unshift(...parsedItems)
+}
+
+// API Responses methods
+function fetchApiResponses() {
+  // No backend call needed, just initialize with empty array
+  apiResponses.value = []
+}
+
+async function addApiResponse(formData) {
+  try {
+    const newApi = {
+      id: crypto.randomUUID(), // Generate a unique ID
+      name: formData.name,
+      url: formData.url,
+      description: formData.description,
+      headers: formData.headers
+    }
+
+    if (editingApiIndex.value !== null) {
+      apiResponses.value.splice(editingApiIndex.value, 1, newApi)
+    } else {
+      apiResponses.value.unshift(newApi)
+    }
+
+    resetApiForm()
+    ElMessage.success('API response added successfully')
+  } catch (error) {
+    console.error('Error adding API response:', error)
+    ElMessage.error('Failed to add API response')
+  }
+}
+
+function editApi(api) {
+  const index = apiResponses.value.findIndex(item => item.id === api.id)
+  if (index !== -1) {
+    editingApiIndex.value = index
+    apiForm.value = { ...api }
+    showApiModal.value = true
+  }
+}
+
+function deleteApi(api) {
+  const index = apiResponses.value.findIndex(item => item.id === api.id)
+  if (index !== -1) {
+    apiResponses.value.splice(index, 1)
+    ElMessage.success('API response deleted successfully')
+  }
+}
+
+function archiveApi(api) {
+  const index = apiResponses.value.findIndex(item => item.id === api.id)
+  if (index !== -1) {
+    apiResponses.value.splice(index, 1)
+    ElMessage.success('API response archived successfully')
+  }
+}
+
+function resetApiForm() {
+  editingApiIndex.value = null
+  showApiModal.value = false
+  apiForm.value = {
+    name: '',
+    url: '',
+    description: '',
+    headers: ''
+  }
 }
 </script>
 

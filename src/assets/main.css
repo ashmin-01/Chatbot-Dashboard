@@ -35,8 +35,12 @@
   --color-text: #333333;
   --color-text-soft: #6B6B6B;
   --color-icon: #6B6B6B;
+  --color-buttion-hover: #2B3A42;
 
-
+  --color-primary: #FF9800;
+  --color-primary-light: rgba(255, 152, 0, 0.3);
+  --color-border: #E2E8F0;
+  --color-placeholder: #94A3B8;
 }
 
 
@@ -87,4 +91,14 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  input:focus, textarea:focus {
+    @apply outline-none border-[var(--color-primary)] ring-2 ring-[var(--color-primary-light)];
+  }
 }

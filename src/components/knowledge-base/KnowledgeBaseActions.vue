@@ -2,13 +2,13 @@
   <div class="flex gap-2">
     <button
       @click="$emit('add')"
-      class="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-2 rounded"
+      class="cursor-pointer bg-gradient-to-r from-[var(--color-primary)] to-[#FFA500] hover:shadow-lg text-white font-medium px-6 py-2 rounded-full transition-all duration-300 "
     >
       + Add Knowledge Item
     </button>
     <button
       @click="fileInput?.click()"
-      class="cursor-pointer border border-orange-400 text-orange-500 hover:bg-orange-50 font-medium px-4 py-2 rounded"
+      class="cursor-pointer border border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] font-medium px-4 py-2 rounded-full"
     >
       Import
     </button>
@@ -41,4 +41,4 @@ const handleFileUpload = (event: Event) => {
     input.value = ''
   }
 }
-</script> 
+</script>

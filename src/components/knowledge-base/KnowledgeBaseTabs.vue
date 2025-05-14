@@ -4,7 +4,7 @@
       v-for="tab in tabs"
       :key="tab"
       @click="$emit('update:activeTab', tab)"
-      class="px-4 py-2 -mb-px border-b-2"
+      class="cursor-pointer px-4 py-2 -mb-px border-b-2"
       :class="
         activeTab === tab
           ? 'border-orange-500 text-orange-600'
@@ -31,4 +31,4 @@ const emit = defineEmits<{
 
 // Tabs data
 const tabs = ref(['FAQs', 'Long-form Answers', 'API Responses', 'Archived'])
-</script> 
+</script>
