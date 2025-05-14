@@ -28,13 +28,15 @@
         />
 
         <!-- Knowledge Base Modal -->
-        <KnowledgeBaseModal
-          v-model="showModal"
-          :is-editing="editingIndex !== null"
-          :initial-data="form"
-          @save="addKnowledgeItem"
-          @cancel="resetForm"
-        />
+  <KnowledgeBaseModal
+  v-model="showModal"
+  :is-editing="editingIndex !== null"
+  :initial-data="form"
+  @save="handleSave"
+  @cancel="resetForm"
+/>
+
+
 
         <!-- Loading/Error States -->
         <div v-if="loading" class="flex justify-center py-8">
@@ -137,6 +139,13 @@ const getItemId = (index) => {
 const isItemChecked = (index) => {
   return checkedItems.value.includes(getItemId(index))
 }
+function handleSave(formData) {
+  if (editingIndex.value !== null) {
+    updateKnowledgeItem(formData);
+  } else {
+    addKnowledgeItem(formData);
+  }
+}
 
 const handleItemCheck = (index, checked) => {
   const itemId = getItemId(index)
@@ -220,24 +229,51 @@ onMounted(fetchKnowledgeItems)
 
 const bulkDeleteItems = async () => {
   try {
+    // Store the IDs we're about to delete
+    const idsToDelete = [...checkedItems.value];
+
     const response = await http.delete('/delete-documents', {
-      data: checkedItems.value,
+      data: idsToDelete,
       params: { collection_name: 'FAQs' }
-    })
+    });
+
     if (response.data.success) {
-      ElMessage.success('Items deleted successfully')
-      checkedItems.value = []
-      await fetchKnowledgeItems()
+      // 1. Immediately remove deleted items from the local state
+      knowledgeItems.value = knowledgeItems.value.filter(
+        item => !idsToDelete.includes(item.id)
+      );
+
+      // 2. Clear the selection
+      checkedItems.value = [];
+
+      // 3. Show success message
+      ElMessage.success('Items deleted successfully');
+
+      // Optional: Refresh from server if needed
+      await fetchKnowledgeItems();
     }
   } catch (err) {
-    console.error('Error deleting items:', err)
-    ElMessage.error('Failed to delete items')
+    console.error('Error deleting items:', err);
+    ElMessage.error('Failed to delete items');
   }
-}
+
+};
 
 function editItem(index) {
   const item = knowledgeItems.value[index]
   editingIndex.value = index
+  form.value = {
+    en: {
+      question: item.question,
+      answer: item.responsePreview,
+      category: item.category[0]
+    },
+    ar: {
+      question: item.question_ar,
+      answer: item.answer_ar,
+      category: item.category_ar
+    }
+  }
   showModal.value = true
 }
 
@@ -270,6 +306,65 @@ async function deleteItem(index) {
 
 async function addKnowledgeItem(formData) {
   try {
+
+    function generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    const response = await http.post('/add-document',
+      { propert: {
+          question_ar: formData.ar.question,
+          answer_ar: formData.ar.answer,
+          category_ar: formData.ar.category,
+          question_en: formData.en.question,
+          answer_en: formData.en.answer,
+          category_en: formData.en.category,
+        }
+      },
+      {
+        params: { collectionName: 'FAQs' }
+      }
+    );
+
+    const newItem = {
+      id: generateUUID(),
+      question: formData.en.question,
+      responsePreview: formData.en.answer,
+      category: [formData.en.category],
+      question_ar: formData.ar.question,
+      answer_ar: formData.ar.answer,
+      category_ar: formData.ar.category,
+      author: 'You',
+      date: new Date().toLocaleDateString('en-US', {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric'
+      })
+    };
+
+    knowledgeItems.value.unshift(newItem);
+    resetForm();
+    ElMessage.success('Item added successfully');
+    await fetchKnowledgeItems();
+  } catch (error) {
+    console.error('Add error:', error);
+    ElMessage.error(
+      error.response?.data?.detail ||
+      error.message ||
+      'Failed to add item'
+    );
+  }
+}
+//update chunk
+
+async function updateKnowledgeItem(formData) {
+  try {
+    if (editingIndex.value === null) return;
+
     const documentData = {
       question_ar: formData.ar.question,
       answer_ar: formData.ar.answer,
@@ -279,21 +374,23 @@ async function addKnowledgeItem(formData) {
       category_en: formData.en.category,
     };
 
-    const response = await http.post('/add-document',
-      { propert: documentData },  // This matches the backend's Document model
-      {
-        params: { collectionName: 'FAQs' },  // Changed to match the case in backend
-        headers: {
-          'Content-Type': 'application/json'
-        }
+    const itemId = knowledgeItems.value[editingIndex.value].id;
+    const response = await http.put('/update-chunk', null, {
+      params: {
+        uuid: itemId,
+        collection_name: 'FAQs',
+        ...documentData
       }
-    );
+    });
 
-    const newItem = {
+    const updatedItem = {
+      ...knowledgeItems.value[editingIndex.value],
       question: formData.en.question,
       responsePreview: formData.en.answer,
       category: [formData.en.category],
-      author: 'You',
+      question_ar: formData.ar.question,
+      answer_ar: formData.ar.answer,
+      category_ar: formData.ar.category,
       date: new Date().toLocaleString('en-US', {
         month: 'short',
         day: '2-digit',
@@ -302,29 +399,23 @@ async function addKnowledgeItem(formData) {
         minute: '2-digit',
         hour12: true,
       }),
-    }
+    };
 
-    if (editingIndex.value !== null) {
-      knowledgeItems.value.splice(editingIndex.value, 1, newItem)
-    } else {
-      knowledgeItems.value.unshift(newItem)
-    }
-
-    resetForm()
-    ElMessage.success('Knowledge item added successfully')
-    console.log('Document added successfully:', response.data)
+    knowledgeItems.value.splice(editingIndex.value, 1, updatedItem);
+    resetForm();
+    ElMessage.success('Item updated successfully');
   } catch (error) {
-    console.error('Full error details:', error.response?.data)
-    ElMessage.error(error.response?.data?.detail?.message || 'Failed to add knowledge item')
-    if (error.response?.data?.detail) {
-      console.log(`Validation errors:\n${JSON.stringify(error.response.data.detail, null, 2)}`)
-    }
+    console.error('Error updating item:', error);
+    ElMessage.error(error.response?.data?.detail?.message || 'Failed to update knowledge item');
   }
 }
-
 function resetForm() {
-  editingIndex.value = null
-  showModal.value = false
+  form.value = {
+    en: { question: '', answer: '', category: '' },
+    ar: { question: '', answer: '', category: '' },
+  };
+  editingIndex.value = null;
+  showModal.value = false;
 }
 
 function handleFileUpload(event) {

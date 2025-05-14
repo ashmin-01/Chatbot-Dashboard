@@ -62,7 +62,14 @@ export const put = async <T>(
   config?: AxiosRequestConfig,
 ): Promise<ApiResponse<T>> => {
   try {
-    const response: AxiosResponse<T> = await apiClient.put(url, data, config)
+    // For PUT requests with query params, we need to handle them differently
+    const requestConfig = {
+      ...config,
+      params: config?.params || {},
+      data: data || {}
+    }
+
+    const response: AxiosResponse<T> = await apiClient.put(url, requestConfig.data, requestConfig)
     return {
       data: response.data,
       status: response.status,

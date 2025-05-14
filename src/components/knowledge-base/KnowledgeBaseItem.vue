@@ -13,9 +13,9 @@
       <div class="flex-1">
         <!-- Top Right Icons -->
         <div class="absolute top-3 right-3 flex gap-2 text-gray-400">
-          <button @click="$emit('edit')" class="cursor-pointer hover:text-gray-600">
-            <i class="ri-pencil-line"></i>
-          </button>
+          <button @click="handleEdit" class="cursor-pointer hover:text-gray-600">
+  <i class="ri-pencil-line"></i>
+</button>
           <button @click="$emit('archive')" class="cursor-pointer hover:text-gray-600">
             <i class="ri-archive-line"></i>
           </button>
@@ -46,6 +46,8 @@
 </template>
 
 <script setup lang="ts">
+import { defineEmits } from 'vue'
+
 interface KnowledgeItem {
   id: string
   question: string
@@ -53,6 +55,9 @@ interface KnowledgeItem {
   category: string[]
   author: string
   date: string
+  question_ar?: string
+  answer_ar?: string
+  category_ar?: string
 }
 
 interface Props {
@@ -60,17 +65,18 @@ interface Props {
   isChecked: boolean
 }
 
-interface Emits {
+const props = defineProps<Props>()
+const emit = defineEmits<{
   (e: 'update:checked', value: boolean): void
-  (e: 'edit'): void
+  (e: 'edit', item: KnowledgeItem): void
   (e: 'archive'): void
   (e: 'delete'): void
+}>()
+
+const handleEdit = () => {
+  emit('edit', props.item)
 }
-
-defineProps<Props>()
-defineEmits<Emits>()
 </script>
-
 <style scoped>
 .el-checkbox {
   margin-right: 0;
@@ -80,4 +86,4 @@ defineEmits<Emits>()
 .el-checkbox__label {
   font-size: 14px;
 }
-</style> 
+</style>
