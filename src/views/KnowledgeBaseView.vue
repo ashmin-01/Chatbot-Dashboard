@@ -32,11 +32,15 @@
   v-model="showModal"
   :is-editing="editingIndex !== null"
   :initial-data="form"
-  @save="handleSave"
+  @save="addKnowledgeItem"
   @cancel="resetForm"
 />
 
-
+<!-- Status Modal -->
+<KnowledgeBaseStatusModal
+  v-model="showStatusModal"
+  :is-success="isSuccess"
+/>
 
     <!-- Loading/Error States -->
 <div v-if="loading" class="flex justify-center py-8">
@@ -122,6 +126,7 @@ import KnowledgeBaseItem from '../components/knowledge-base/KnowledgeBaseItem.vu
 import KnowledgeBaseActions from '../components/knowledge-base/KnowledgeBaseActions.vue'
 import KnowledgeBaseApiList from '../components/knowledge-base/KnowledgeBaseApiList.vue'
 import KnowledgeBaseApiModal from '../components/knowledge-base/KnowledgeBaseApiModal.vue'
+import KnowledgeBaseStatusModal from '../components/knowledge-base/KnowledgeBaseStatusModal.vue'
 
 // Reactive state
 const searchState = ref({
@@ -155,6 +160,10 @@ const apiForm = ref({
   headers: ''
 })
 
+// Add new refs for status modal
+const showStatusModal = ref(false)
+const isSuccess = ref(false)
+
 // Watch for search changes
 watch(() => searchState.value, () => {
   // Deselect any items when search/filter changes
@@ -186,13 +195,6 @@ const getItemId = (index) => {
 const isItemChecked = (index) => {
   return checkedItems.value.includes(getItemId(index))
 }
-function handleSave(formData) {
-  if (editingIndex.value !== null) {
-    updateKnowledgeItem(formData);
-  } else {
-    addKnowledgeItem(formData);
-  }
-}
 
 const handleItemCheck = (index, checked) => {
   const itemId = getItemId(index)
@@ -204,25 +206,6 @@ const handleItemCheck = (index, checked) => {
       checkedItems.value.splice(itemIndex, 1)
     }
   }
-}
-
-// Bulk delete confirmation
-const confirmBulkDelete = () => {
-  ElMessageBox.confirm(
-    `Are you sure you want to delete ${checkedItems.value.length} items?`,
-    'Confirm Bulk Delete',
-    {
-      confirmButtonText: 'Delete',
-      cancelButtonText: 'Cancel',
-      type: 'warning',
-    }
-  )
-    .then(() => {
-      bulkDeleteItems()
-    })
-    .catch(() => {
-      ElMessage.info('Bulk delete canceled')
-    })
 }
 
 // Methods
@@ -277,37 +260,30 @@ onMounted(() => {
   fetchApiResponses()
 })
 
+
+
+// Update the bulkDeleteItems function
 const bulkDeleteItems = async () => {
   try {
-    // Store the IDs we're about to delete
     const idsToDelete = [...checkedItems.value];
 
-    const response = await http.delete('/delete-documents', {
+    await http.delete('/delete-documents', {
       data: idsToDelete,
       params: { collection_name: 'FAQs' }
     });
 
-    if (response.data.success) {
-      // 1. Immediately remove deleted items from the local state
-      knowledgeItems.value = knowledgeItems.value.filter(
-        item => !idsToDelete.includes(item.id)
-      );
-
-      // 2. Clear the selection
-      checkedItems.value = [];
-
-      // 3. Show success message
-      ElMessage.success('Items deleted successfully');
-
-      // Optional: Refresh from server if needed
-      await fetchKnowledgeItems();
-    }
+    // Optimistically update UI without checking response format
+    knowledgeItems.value = knowledgeItems.value.filter(
+      item => !idsToDelete.includes(item.id)
+    );
+    checkedItems.value = [];
+    ElMessage.success('Items deleted successfully');
   } catch (err) {
     console.error('Error deleting items:', err);
     ElMessage.error('Failed to delete items');
   }
-
 };
+
 
 function editItem(index) {
   const item = knowledgeItems.value[index]
@@ -332,8 +308,11 @@ function archiveItem(index) {
   archivedItems.value.push(item)
 }
 
+
+// Inside the deleteItem function
 async function deleteItem(index) {
   const item = knowledgeItems.value[index]
+  const itemId = item.id // Capture ID before deletion
 
   try {
     await http.delete('/delete-document', {
@@ -344,6 +323,11 @@ async function deleteItem(index) {
     })
 
     knowledgeItems.value.splice(index, 1)
+    // Remove the item ID from checkedItems if present
+    const checkedIndex = checkedItems.value.indexOf(itemId)
+    if (checkedIndex > -1) {
+      checkedItems.value.splice(checkedIndex, 1)
+    }
     showMoreIndex.value = null
     ElMessage.success(`Item deleted successfully`)
   } catch (error) {
@@ -356,32 +340,39 @@ async function deleteItem(index) {
 
 async function addKnowledgeItem(formData) {
   try {
+    // Show loading state
+    showStatusModal.value = true
+    isSuccess.value = false
 
-    function generateUUID() {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-    }
+    const documentData = {
+      question_ar: formData.ar.question,
+      answer_ar: formData.ar.answer,
+      category_ar: formData.ar.category,
+      question_en: formData.en.question,
+      answer_en: formData.en.answer,
+      category_en: formData.en.category,
+    };
 
     const response = await http.post('/add-document',
-      { propert: {
-          question_ar: formData.ar.question,
-          answer_ar: formData.ar.answer,
-          category_ar: formData.ar.category,
-          question_en: formData.en.question,
-          answer_en: formData.en.answer,
-          category_en: formData.en.category,
-        }
-      },
+      { propert: documentData },
       {
-        params: { collectionName: 'FAQs' }
+        params: { collectionName: 'FAQs' },
+        headers: {
+          'Content-Type': 'application/json'
+        }
       }
     );
 
+    // Extract UUID from the response message
+    const uuidMatch = response.data.message.match(/Object with (.*?) is  inserted/);
+    const uuid = uuidMatch ? uuidMatch[1] : null;
+
+    if (!uuid) {
+      throw new Error('Failed to get UUID from response');
+    }
+
     const newItem = {
-      id: generateUUID(),
+      id: uuid,
       question: formData.en.question,
       responsePreview: formData.en.answer,
       category: [formData.en.category],
@@ -389,24 +380,34 @@ async function addKnowledgeItem(formData) {
       answer_ar: formData.ar.answer,
       category_ar: formData.ar.category,
       author: 'You',
-      date: new Date().toLocaleDateString('en-US', {
+      date: new Date().toLocaleString('en-US', {
         month: 'short',
         day: '2-digit',
-        year: 'numeric'
-      })
-    };
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      }),
+    }
 
-    knowledgeItems.value.unshift(newItem);
-    resetForm();
-    ElMessage.success('Item added successfully');
-    await fetchKnowledgeItems();
+    if (editingIndex.value !== null) {
+      knowledgeItems.value.splice(editingIndex.value, 1, newItem)
+    } else {
+      knowledgeItems.value.unshift(newItem)
+    }
+
+    // Show success state
+    isSuccess.value = true
+    // Close the form modal
+    resetForm()
   } catch (error) {
-    console.error('Add error:', error);
-    ElMessage.error(
-      error.response?.data?.detail ||
-      error.message ||
-      'Failed to add item'
-    );
+    console.error('Full error details:', error.response?.data)
+    ElMessage.error(error.response?.data?.detail?.message || 'Failed to add knowledge item')
+    if (error.response?.data?.detail) {
+      console.log(`Validation errors:\n${JSON.stringify(error.response.data.detail, null, 2)}`)
+    }
+    // Close status modal on error
+    showStatusModal.value = false
   }
 }
 //update chunk

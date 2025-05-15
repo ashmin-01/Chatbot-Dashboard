@@ -39,8 +39,9 @@ const currentRoute = computed(() => route.path)
 
 <template>
   <aside
-    class="relative flex flex-col h-screen transition-[width] duration-300 ease-in-out font-sans rounded-r-4xl"
+    class="relative flex flex-col h-screen transition-[width] duration-300 ease-in-out font-sans rounded-r-4xl z-20"
     :class="{ 'w-[70px]': collapsed, 'w-[300px]': !collapsed }"
+    :style="{ '--sidebar-width': collapsed ? '70px' : '300px' }"
     style="background-color: var(--color-sidebar)"
   >
     <!-- Toggle Button -->

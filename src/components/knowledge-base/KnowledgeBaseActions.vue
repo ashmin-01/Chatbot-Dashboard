@@ -1,17 +1,17 @@
 <template>
-  <div class="flex gap-2">
+  <div class="flex flex-wrap gap-2">
     <button
       @click="$emit('add')"
-      class="cursor-pointer bg-gradient-to-r from-[var(--color-primary)] to-[#FFA500] hover:shadow-lg text-white font-medium px-6 py-2 rounded-full transition-all duration-300 "
+      class="flex-1 sm:flex-none cursor-pointer bg-gradient-to-r from-[var(--color-primary)] to-[#FFA500] hover:shadow-lg text-white text-sm sm:text-base whitespace-nowrap font-medium px-4 sm:px-6 py-2 rounded-full transition-all duration-300 min-w-[140px] "
     >
       + Add Knowledge Item
     </button>
     <button
-      @click="fileInput?.click()"
-      class="cursor-pointer border border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] font-medium px-4 py-2 rounded-full"
-    >
-      Import
-    </button>
+  @click="fileInput?.click()"
+  class="flex-1 sm:flex-none cursor-pointer border border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] font-medium px-4 py-2 rounded-full text-sm sm:text-base whitespace-nowrap min-w-[100px]"
+>
+  Import
+</button>
     <input
       ref="fileInput"
       type="file"

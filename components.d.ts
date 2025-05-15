@@ -37,6 +37,7 @@ declare module 'vue' {
     KnowledgeBaseModal: typeof import('./src/components/knowledge-base/KnowledgeBaseModal.vue')['default']
     KnowledgeBaseSearch: typeof import('./src/components/knowledge-base/KnowledgeBaseSearch.vue')['default']
     KnowledgeBaseSelect: typeof import('./src/components/knowledge-base/KnowledgeBaseSelect.vue')['default']
+    KnowledgeBaseStatusModal: typeof import('./src/components/knowledge-base/KnowledgeBaseStatusModal.vue')['default']
     KnowledgeBaseTabs: typeof import('./src/components/knowledge-base/KnowledgeBaseTabs.vue')['default']
     LanguageSwitcher: typeof import('./src/components/LanguageSwitcher.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
